@@ -10,7 +10,13 @@ export const generateTravelPlan = async (formData: {
   travelers: string;
   interests: string;
 }) => {
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("Gemini API key is not configured. Please check your settings.");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `Act as a travel planning expert and create a detailed travel itinerary based on the following information:
@@ -36,8 +42,11 @@ Please format the response in a clear, organized manner.`;
     const result = await model.generateContent(prompt);
     const response = result.response;
     return response.text();
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating travel plan:", error);
+    if (error.message?.includes("API key not valid")) {
+      throw new Error("Invalid API key. Please check your Gemini API key configuration.");
+    }
     throw new Error("Failed to generate travel plan. Please try again.");
   }
 };
