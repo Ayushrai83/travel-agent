@@ -16,7 +16,7 @@ export const generateTravelPlan = async (formData: {
     .from('secrets')
     .select('value')
     .eq('name', 'GEMINI_API_KEY')
-    .single();
+    .maybeSingle();
 
   if (error || !config?.value) {
     throw new Error("Gemini API key is not configured. Please check your settings.");
