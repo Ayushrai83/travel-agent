@@ -18,8 +18,15 @@ export const generateTravelPlan = async (formData: {
     .eq('name', 'GEMINI_API_KEY')
     .maybeSingle();
 
-  if (error || !config?.value) {
-    throw new Error("Gemini API key is not configured. Please check your settings.");
+  console.log('Supabase query result:', { config, error }); // Debug log
+
+  if (error) {
+    console.error('Error fetching Gemini API key:', error);
+    throw new Error(`Failed to fetch Gemini API key: ${error.message}`);
+  }
+
+  if (!config?.value) {
+    throw new Error("Gemini API key not found in database. Please make sure you've added it in the project settings.");
   }
 
   const genAI = new GoogleGenerativeAI(config.value);
@@ -51,8 +58,8 @@ Please format the response in a clear, organized manner.`;
   } catch (error: any) {
     console.error("Error generating travel plan:", error);
     if (error.message?.includes("API key not valid")) {
-      throw new Error("Invalid API key. Please check your Gemini API key configuration.");
+      throw new Error("Invalid Gemini API key. Please check your API key configuration.");
     }
-    throw new Error("Failed to generate travel plan. Please try again.");
+    throw new Error(`Failed to generate travel plan: ${error.message}`);
   }
 };
