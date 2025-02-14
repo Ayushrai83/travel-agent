@@ -1,5 +1,6 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { supabase } from "@/integrations/supabase/client";
 
 export const generateTravelPlan = async (formData: {
   source: string;
@@ -10,13 +11,18 @@ export const generateTravelPlan = async (formData: {
   travelers: string;
   interests: string;
 }) => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  
-  if (!apiKey) {
+  // Fetch the API key from Supabase
+  const { data: config, error } = await supabase
+    .from('secrets')
+    .select('value')
+    .eq('name', 'GEMINI_API_KEY')
+    .single();
+
+  if (error || !config?.value) {
     throw new Error("Gemini API key is not configured. Please check your settings.");
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
+  const genAI = new GoogleGenerativeAI(config.value);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `Act as a travel planning expert and create a detailed travel itinerary based on the following information:
