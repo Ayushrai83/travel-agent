@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DatePicker } from "@/components/ui/date-picker";
 
 interface TravelFormProps {
@@ -19,6 +20,7 @@ export interface TravelFormData {
   budget: string;
   travelers: string;
   interests: string;
+  includeFlights: boolean;
 }
 
 const TravelForm = ({ onSubmit, isLoading }: TravelFormProps) => {
@@ -30,6 +32,7 @@ const TravelForm = ({ onSubmit, isLoading }: TravelFormProps) => {
     budget: "",
     travelers: "",
     interests: "",
+    includeFlights: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,6 +132,19 @@ const TravelForm = ({ onSubmit, isLoading }: TravelFormProps) => {
             className="bg-white/50"
             required
           />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="includeFlights"
+            checked={formData.includeFlights}
+            onCheckedChange={(checked) =>
+              setFormData((prev) => ({ ...prev, includeFlights: checked as boolean }))
+            }
+          />
+          <Label htmlFor="includeFlights" className="text-sm text-gray-600">
+            Include flight information in travel plan
+          </Label>
         </div>
 
         <Button
