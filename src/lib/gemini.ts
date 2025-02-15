@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -76,8 +75,37 @@ const mockFlightData = {
 };
 
 async function getFlightInfo(source: string, destination: string, date: Date) {
-  // For now, return mock data instead of making an API call
-  return mockFlightData.best_flights;
+  try {
+    const { data: config } = await supabase
+      .from('secrets')
+      .select('value')
+      .eq('name', 'SERPAPI_API_KEY')
+      .maybeSingle();
+
+    if (!config?.value) {
+      console.error('SerpAPI key not found');
+      throw new Error('SerpAPI key not found in database');
+    }
+
+    const formattedDate = date.toISOString().split('T')[0];
+    const searchUrl = `https://serpapi.com/search.json?engine=google_flights&departure_id=${source}&arrival_id=${destination}&outbound_date=${formattedDate}&api_key=${config.value}`;
+    
+    const response = await fetch(searchUrl);
+    if (!response.ok) {
+      throw new Error(`SerpAPI request failed: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`SerpAPI error: ${data.error}`);
+    }
+    
+    return data.flights_results;
+  } catch (error) {
+    console.error('Error fetching flight information:', error);
+    throw error;
+  }
 }
 
 export const generateTravelPlan = async (formData: {
